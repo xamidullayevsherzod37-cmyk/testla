@@ -1,0 +1,1432 @@
+<!doctype html>
+<html lang="uz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matematika: Full Test Platforma</title>
+    <style>
+      :root {
+        --easy-color: #27ae60;
+        --hard-color: #e67e22;
+        --primary: #2c3e50;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background-color: #f4f7f9;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        position: sticky;
+        top: 0;
+        background: white;
+        padding: 15px;
+        border-bottom: 3px solid #3498db;
+        z-index: 100;
+        text-align: center;
+      }
+      .stats-bar {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+      .question-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        background: #fff;
+        transition: 0.3s;
+      }
+      .badge {
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        color: white;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        display: inline-block;
+      }
+      .easy {
+        background: var(--easy-color);
+      }
+      .hard {
+        background: var(--hard-color);
+      }
+      .options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 15px;
+      }
+      @media (max-width: 600px) {
+        .options {
+          grid-template-columns: 1fr;
+        }
+      }
+      button {
+        padding: 12px;
+        border: 2px solid #edf2f7;
+        border-radius: 8px;
+        background: #f8fafc;
+        cursor: pointer;
+        text-align: left;
+        transition: 0.2s;
+        font-size: 14px;
+      }
+      button:hover:not(.disabled) {
+        border-color: #3498db;
+        background: #eef2ff;
+      }
+      .correct {
+        background: #2ecc71 !important;
+        color: white !important;
+        border-color: #27ae60 !important;
+      }
+      .wrong {
+        background: #e74c3c !important;
+        color: white !important;
+        border-color: #c0392b !important;
+      }
+      .disabled {
+        pointer-events: none;
+      }
+      .reset-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2>Matematika Interaktiv Testi</h2>
+        <div class="stats-bar">
+          <span style="color: #3498db"
+            >Savol: <span id="current-q">0</span>/20</span
+          >
+          <span style="color: #27ae60"
+            >To'g'ri: <span id="correct-ans">0</span></span
+          >
+          <span style="color: #e74c3c"
+            >Xato: <span id="wrong-ans">0</span></span
+          >
+        </div>
+        <div class="stats-bar">
+          <span
+            style="color: #9b59b6; cursor: pointer"
+            onclick="
+              alert(
+                'Bazadagi jami savollar soni: ' + allQuestions.length + ' ta',
+              )
+            "
+          >
+            📊 Baza <span id="db-total"></span>
+          </span>
+        </div>
+        <button class="reset-btn" onclick="location.reload()">
+          🔄 Yangi test boshlash
+        </button>
+      </div>
+
+      <div id="quiz-container"></div>
+    </div>
+
+    <script>
+      // Barcha savollar bazasi (Fayllardan olingan)
+      const allQuestions = [
+        /* ================= EASY (1–100) ================= */
+
+        {
+          q: "M ta satr va n ta ustundan iborat jadval?",
+          a: ["Matritsa", "Determinant", "Minor", "Vektor"],
+          c: 0,
+          t: "easy",
+        }, //1
+        {
+          q: "Kvadrat matritsa nima?",
+          a: ["Satr=ustun", "Satr>ustun", "Satr<ustun", "Ixtiyoriy"],
+          c: 0,
+          t: "easy",
+        }, //2
+        {
+          q: "Birlik matritsa?",
+          a: ["Diagonalda 1", "Hamma 0", "Hamma 1", "Diagonal 0"],
+          c: 0,
+          t: "easy",
+        }, //3
+        {
+          q: "Nol matritsa?",
+          a: ["Hamma element 0", "Diagonal 1", "det=1", "rang=1"],
+          c: 0,
+          t: "easy",
+        }, //4
+        {
+          q: "Matritsa rangi nima?",
+          a: [
+            "Eng katta nolmas minor",
+            "Eng kichik minor",
+            "Diagonal",
+            "Determinant",
+          ],
+          c: 0,
+          t: "easy",
+        }, //5
+        {
+          q: "det≠0 bo‘lsa matritsa?",
+          a: ["Xos", "Xosmas", "Nol", "Birlik"],
+          c: 0,
+          t: "easy",
+        }, //6
+        {
+          q: "det=0 bo‘lsa matritsa?",
+          a: ["Xosmas", "Xos", "Birlik", "Diagonal"],
+          c: 0,
+          t: "easy",
+        }, //7
+        {
+          q: "Transponirlash nima?",
+          a: ["Satr↔ustun", "Satr almashish", "Ustun almashish", "Minor"],
+          c: 0,
+          t: "easy",
+        }, //8
+        {
+          q: "A+B qachon mavjud?",
+          a: ["O‘lcham teng", "Har doim", "Hech qachon", "Faqat kvadrat"],
+          c: 0,
+          t: "easy",
+        }, //9
+        {
+          q: "A×B qachon mavjud?",
+          a: ["A ustuni=B satri", "Har doim", "O‘lcham teng", "Faqat kvadrat"],
+          c: 0,
+          t: "easy",
+        }, //10
+
+        {
+          q: "Minor nima?",
+          a: ["Qism determinant", "To‘liq determinant", "Rang", "Ustun"],
+          c: 0,
+          t: "easy",
+        }, //11
+        {
+          q: "Algebraik to‘ldiruvchi?",
+          a: ["(-1)^(i+j)Mij", "Mij", "det", "rang"],
+          c: 0,
+          t: "easy",
+        }, //12
+        {
+          q: "Satrlarni almashtirish rangga ta’siri?",
+          a: ["Ta’sir qilmaydi", "Ortadi", "Kamayadi", "0 bo‘ladi"],
+          c: 0,
+          t: "easy",
+        }, //13
+        {
+          q: "k≠0 songa ko‘paytirish rangga?",
+          a: ["Ta’sir qilmaydi", "Ortadi", "0", "Kamayadi"],
+          c: 0,
+          t: "easy",
+        }, //14
+        {
+          q: "Determinant satr↔ustun?",
+          a: ["O‘zgarmaydi", "0", "Qarama-qarshi", "2 marta"],
+          c: 0,
+          t: "easy",
+        }, //15
+        {
+          q: "Ikki satr almashsa det?",
+          a: ["Qarama-qarshi", "O‘zgarmaydi", "0", "2 marta"],
+          c: 0,
+          t: "easy",
+        }, //16
+        {
+          q: "Grafik usul qaysi fan?",
+          a: ["Chiziqli dasturlash", "Analiz", "Algebra", "Geometriya"],
+          c: 0,
+          t: "easy",
+        }, //17
+        {
+          q: "Grafik usul nechta o‘zgaruvchi?",
+          a: ["2", "1", "3", "Cheksiz"],
+          c: 0,
+          t: "easy",
+        }, //18
+        {
+          q: "Yechimlar sohasi bu?",
+          a: ["Barcha mos nuqtalar", "Bitta nuqta", "Kesma", "Chiziq"],
+          c: 0,
+          t: "easy",
+        }, //19
+        {
+          q: "Optimal yechim qayerda?",
+          a: ["Burchakda", "Markazda", "Tasodifiy", "Har joyda"],
+          c: 0,
+          t: "easy",
+        }, //20
+
+        {
+          q: "To‘g‘ri chiziq tenglamasi?",
+          a: ["y=kx+b", "x²+y²", "ax²+by", "xyz"],
+          c: 0,
+          t: "easy",
+        }, //21
+        {
+          q: "Parallel chiziqlar sharti?",
+          a: ["k1=k2", "k1·k2=-1", "k1+k2=0", "k1≠k2"],
+          c: 0,
+          t: "easy",
+        }, //22
+        {
+          q: "Perpendikulyar chiziqlar?",
+          a: ["k1·k2=-1", "k1=k2", "k1+k2=0", "k1≠k2"],
+          c: 0,
+          t: "easy",
+        }, //23
+        {
+          q: "Masofa formulasi (2D)?",
+          a: ["√((x2-x1)²+(y2-y1)²)", "x+y", "|x|", "|y|"],
+          c: 0,
+          t: "easy",
+        }, //24
+        {
+          q: "Masofa formulasi (3D)?",
+          a: ["√((x2-x1)²+(y2-y1)²+(z2-z1)²)", "x+y+z", "|x|", "|y|"],
+          c: 0,
+          t: "easy",
+        }, //25
+
+        {
+          q: "Vektor uzunligi?",
+          a: ["√(x²+y²)", "x+y", "|x|", "|y|"],
+          c: 0,
+          t: "easy",
+        }, //26
+        {
+          q: "Skalyar ko‘paytma?",
+          a: ["a·b", "a×b", "|a|", "det"],
+          c: 0,
+          t: "easy",
+        }, //27
+        {
+          q: "Tekislik tenglamasi?",
+          a: ["Ax+By+Cz+D=0", "y=kx+b", "x+y=1", "z=0"],
+          c: 0,
+          t: "easy",
+        }, //28
+        {
+          q: "Koordinata boshi?",
+          a: ["(0,0)", "(1,1)", "(0,1)", "(1,0)"],
+          c: 0,
+          t: "easy",
+        }, //29
+        {
+          q: "Vektor nol bo‘lsa?",
+          a: ["Uzunligi 0", "Uzunligi 1", "Manfiy", "Musbat"],
+          c: 0,
+          t: "easy",
+        }, //30
+
+        {
+          q: "Determinant nima?",
+          a: ["Son", "Matritsa", "Vektor", "Funksiya"],
+          c: 0,
+          t: "easy",
+        }, //31
+        {
+          q: "Determinant faqat?",
+          a: ["Kvadrat matritsa", "Har qanday", "Uchburchak", "Diagonal"],
+          c: 0,
+          t: "easy",
+        }, //32
+        {
+          q: "Diagonal matritsa?",
+          a: ["Diagonalda sonlar", "Hamma 0", "Hamma 1", "Faqat 2x2"],
+          c: 0,
+          t: "easy",
+        }, //33
+        {
+          q: "Simmetrik matritsa?",
+          a: ["Aᵀ=A", "det=0", "A=-A", "rang=1"],
+          c: 0,
+          t: "easy",
+        }, //34
+        {
+          q: "Qarama-qarshi matritsa?",
+          a: ["-A", "Aᵀ", "A⁻¹", "det(A)"],
+          c: 0,
+          t: "easy",
+        }, //35
+
+        {
+          q: "Teskari matritsa belgisi?",
+          a: ["A⁻¹", "Aᵀ", "det(A)", "rank(A)"],
+          c: 0,
+          t: "easy",
+        }, //36
+        {
+          q: "Teskari qachon mavjud?",
+          a: ["det≠0", "det=0", "Har doim", "Hech qachon"],
+          c: 0,
+          t: "easy",
+        }, //37
+        {
+          q: "Chiziqli tenglama?",
+          a: ["ax+b=0", "x²", "xy", "x³"],
+          c: 0,
+          t: "easy",
+        }, //38
+        {
+          q: "Ikki chiziq kesishsa?",
+          a: ["1 nuqta", "2 nuqta", "Yo‘q", "Cheksiz"],
+          c: 0,
+          t: "easy",
+        }, //39
+        {
+          q: "Parallel chiziqlar kesishadimi?",
+          a: ["Yo‘q", "Ha", "Ba’zan", "Har doim"],
+          c: 0,
+          t: "easy",
+        }, //40
+
+        {
+          q: "Perpendikulyar burchak?",
+          a: ["90°", "45°", "60°", "180°"],
+          c: 0,
+          t: "easy",
+        }, //41
+        { q: "Tekislik bu?", a: ["2D", "1D", "3D", "0D"], c: 0, t: "easy" }, //42
+        {
+          q: "Fazoda nuqta?",
+          a: ["(x,y,z)", "(x,y)", "(x)", "(y)"],
+          c: 0,
+          t: "easy",
+        }, //43
+        {
+          q: "Vektor yo‘nalishi?",
+          a: [
+            "Boshlanishdan oxirga",
+            "Oxirdan boshga",
+            "Diagonal",
+            "Tasodifiy",
+          ],
+          c: 0,
+          t: "easy",
+        }, //44
+        {
+          q: "Koordinata o‘qi?",
+          a: ["x,y,z", "a,b,c", "k,b", "m,n"],
+          c: 0,
+          t: "easy",
+        }, //45
+
+        { q: "Abssissa?", a: ["x", "y", "z", "t"], c: 0, t: "easy" }, //46
+        { q: "Ordinate?", a: ["y", "x", "z", "t"], c: 0, t: "easy" }, //47
+        { q: "Applikata?", a: ["z", "x", "y", "t"], c: 0, t: "easy" }, //48
+        {
+          q: "Matritsa elementi?",
+          a: ["aij", "det", "rank", "trace"],
+          c: 0,
+          t: "easy",
+        }, //49
+        {
+          q: "Iz (trace)?",
+          a: ["Diagonal yig‘indisi", "det", "rang", "minor"],
+          c: 0,
+          t: "easy",
+        }, //50
+
+        {
+          q: "M ta satr va n ta ustundan iborat jadval?",
+          a: ["Matritsa", "Determinant", "Minor", "Vektor"],
+          c: 0,
+          t: "easy",
+        }, //1
+        {
+          q: "Kvadrat matritsa nima?",
+          a: ["Satr=ustun", "Satr>ustun", "Satr<ustun", "Ixtiyoriy"],
+          c: 0,
+          t: "easy",
+        }, //2
+        {
+          q: "Birlik matritsa?",
+          a: ["Diagonalda 1", "Hamma 0", "Hamma 1", "Diagonal 0"],
+          c: 0,
+          t: "easy",
+        }, //3
+        {
+          q: "Nol matritsa?",
+          a: ["Hamma element 0", "Diagonal 1", "det=1", "rang=1"],
+          c: 0,
+          t: "easy",
+        }, //4
+        {
+          q: "Matritsa rangi nima?",
+          a: [
+            "Eng katta nolmas minor",
+            "Eng kichik minor",
+            "Diagonal",
+            "Determinant",
+          ],
+          c: 0,
+          t: "easy",
+        }, //5
+        {
+          q: "det≠0 bo‘lsa matritsa?",
+          a: ["Xos", "Xosmas", "Nol", "Birlik"],
+          c: 0,
+          t: "easy",
+        }, //6
+        {
+          q: "det=0 bo‘lsa matritsa?",
+          a: ["Xosmas", "Xos", "Birlik", "Diagonal"],
+          c: 0,
+          t: "easy",
+        }, //7
+        {
+          q: "Transponirlash nima?",
+          a: ["Satr↔ustun", "Satr almashish", "Ustun almashish", "Minor"],
+          c: 0,
+          t: "easy",
+        }, //8
+        {
+          q: "A+B qachon mavjud?",
+          a: ["O‘lcham teng", "Har doim", "Hech qachon", "Faqat kvadrat"],
+          c: 0,
+          t: "easy",
+        }, //9
+        {
+          q: "A×B qachon mavjud?",
+          a: ["A ustuni=B satri", "Har doim", "O‘lcham teng", "Faqat kvadrat"],
+          c: 0,
+          t: "easy",
+        }, //10
+
+        {
+          q: "Minor nima?",
+          a: ["Qism determinant", "To‘liq determinant", "Rang", "Ustun"],
+          c: 0,
+          t: "easy",
+        }, //11
+        {
+          q: "Algebraik to‘ldiruvchi?",
+          a: ["(-1)^(i+j)Mij", "Mij", "det", "rang"],
+          c: 0,
+          t: "easy",
+        }, //12
+        {
+          q: "Satrlarni almashtirish rangga ta’siri?",
+          a: ["Ta’sir qilmaydi", "Ortadi", "Kamayadi", "0 bo‘ladi"],
+          c: 0,
+          t: "easy",
+        }, //13
+        {
+          q: "k≠0 songa ko‘paytirish rangga?",
+          a: ["Ta’sir qilmaydi", "Ortadi", "0", "Kamayadi"],
+          c: 0,
+          t: "easy",
+        }, //14
+        {
+          q: "Determinant satr↔ustun?",
+          a: ["O‘zgarmaydi", "0", "Qarama-qarshi", "2 marta"],
+          c: 0,
+          t: "easy",
+        }, //15
+        {
+          q: "Ikki satr almashsa det?",
+          a: ["Qarama-qarshi", "O‘zgarmaydi", "0", "2 marta"],
+          c: 0,
+          t: "easy",
+        }, //16
+        {
+          q: "Grafik usul qaysi fan?",
+          a: ["Chiziqli dasturlash", "Analiz", "Algebra", "Geometriya"],
+          c: 0,
+          t: "easy",
+        }, //17
+        {
+          q: "Grafik usul nechta o‘zgaruvchi?",
+          a: ["2", "1", "3", "Cheksiz"],
+          c: 0,
+          t: "easy",
+        }, //18
+        {
+          q: "Yechimlar sohasi bu?",
+          a: ["Barcha mos nuqtalar", "Bitta nuqta", "Kesma", "Chiziq"],
+          c: 0,
+          t: "easy",
+        }, //19
+        {
+          q: "Optimal yechim qayerda?",
+          a: ["Burchakda", "Markazda", "Tasodifiy", "Har joyda"],
+          c: 0,
+          t: "easy",
+        }, //20
+
+        {
+          q: "To‘g‘ri chiziq tenglamasi?",
+          a: ["y=kx+b", "x²+y²", "ax²+by", "xyz"],
+          c: 0,
+          t: "easy",
+        }, //21
+        {
+          q: "Parallel chiziqlar sharti?",
+          a: ["k1=k2", "k1·k2=-1", "k1+k2=0", "k1≠k2"],
+          c: 0,
+          t: "easy",
+        }, //22
+        {
+          q: "Perpendikulyar chiziqlar?",
+          a: ["k1·k2=-1", "k1=k2", "k1+k2=0", "k1≠k2"],
+          c: 0,
+          t: "easy",
+        }, //23
+        {
+          q: "Masofa formulasi (2D)?",
+          a: ["√((x2-x1)²+(y2-y1)²)", "x+y", "|x|", "|y|"],
+          c: 0,
+          t: "easy",
+        }, //24
+        {
+          q: "Masofa formulasi (3D)?",
+          a: ["√((x2-x1)²+(y2-y1)²+(z2-z1)²)", "x+y+z", "|x|", "|y|"],
+          c: 0,
+          t: "easy",
+        }, //25
+
+        {
+          q: "Vektor uzunligi?",
+          a: ["√(x²+y²)", "x+y", "|x|", "|y|"],
+          c: 0,
+          t: "easy",
+        }, //26
+        {
+          q: "Skalyar ko‘paytma?",
+          a: ["a·b", "a×b", "|a|", "det"],
+          c: 0,
+          t: "easy",
+        }, //27
+        {
+          q: "Tekislik tenglamasi?",
+          a: ["Ax+By+Cz+D=0", "y=kx+b", "x+y=1", "z=0"],
+          c: 0,
+          t: "easy",
+        }, //28
+        {
+          q: "Koordinata boshi?",
+          a: ["(0,0)", "(1,1)", "(0,1)", "(1,0)"],
+          c: 0,
+          t: "easy",
+        }, //29
+        {
+          q: "Vektor nol bo‘lsa?",
+          a: ["Uzunligi 0", "Uzunligi 1", "Manfiy", "Musbat"],
+          c: 0,
+          t: "easy",
+        }, //30
+
+        {
+          q: "Determinant nima?",
+          a: ["Son", "Matritsa", "Vektor", "Funksiya"],
+          c: 0,
+          t: "easy",
+        }, //31
+        {
+          q: "Determinant faqat?",
+          a: ["Kvadrat matritsa", "Har qanday", "Uchburchak", "Diagonal"],
+          c: 0,
+          t: "easy",
+        }, //32
+        {
+          q: "Diagonal matritsa?",
+          a: ["Diagonalda sonlar", "Hamma 0", "Hamma 1", "Faqat 2x2"],
+          c: 0,
+          t: "easy",
+        }, //33
+        {
+          q: "Simmetrik matritsa?",
+          a: ["Aᵀ=A", "det=0", "A=-A", "rang=1"],
+          c: 0,
+          t: "easy",
+        }, //34
+        {
+          q: "Qarama-qarshi matritsa?",
+          a: ["-A", "Aᵀ", "A⁻¹", "det(A)"],
+          c: 0,
+          t: "easy",
+        }, //35
+
+        {
+          q: "Teskari matritsa belgisi?",
+          a: ["A⁻¹", "Aᵀ", "det(A)", "rank(A)"],
+          c: 0,
+          t: "easy",
+        }, //36
+        {
+          q: "Teskari qachon mavjud?",
+          a: ["det≠0", "det=0", "Har doim", "Hech qachon"],
+          c: 0,
+          t: "easy",
+        }, //37
+        {
+          q: "Chiziqli tenglama?",
+          a: ["ax+b=0", "x²", "xy", "x³"],
+          c: 0,
+          t: "easy",
+        }, //38
+        {
+          q: "Ikki chiziq kesishsa?",
+          a: ["1 nuqta", "2 nuqta", "Yo‘q", "Cheksiz"],
+          c: 0,
+          t: "easy",
+        }, //39
+        {
+          q: "Parallel chiziqlar kesishadimi?",
+          a: ["Yo‘q", "Ha", "Ba’zan", "Har doim"],
+          c: 0,
+          t: "easy",
+        }, //40
+
+        {
+          q: "Perpendikulyar burchak?",
+          a: ["90°", "45°", "60°", "180°"],
+          c: 0,
+          t: "easy",
+        }, //41
+        { q: "Tekislik bu?", a: ["2D", "1D", "3D", "0D"], c: 0, t: "easy" }, //42
+        {
+          q: "Fazoda nuqta?",
+          a: ["(x,y,z)", "(x,y)", "(x)", "(y)"],
+          c: 0,
+          t: "easy",
+        }, //43
+        {
+          q: "Vektor yo‘nalishi?",
+          a: [
+            "Boshlanishdan oxirga",
+            "Oxirdan boshga",
+            "Diagonal",
+            "Tasodifiy",
+          ],
+          c: 0,
+          t: "easy",
+        }, //44
+        {
+          q: "Koordinata o‘qi?",
+          a: ["x,y,z", "a,b,c", "k,b", "m,n"],
+          c: 0,
+          t: "easy",
+        }, //45
+
+        { q: "Abssissa?", a: ["x", "y", "z", "t"], c: 0, t: "easy" }, //46
+        { q: "Ordinate?", a: ["y", "x", "z", "t"], c: 0, t: "easy" }, //47
+        { q: "Applikata?", a: ["z", "x", "y", "t"], c: 0, t: "easy" }, //48
+        {
+          q: "Matritsa elementi?",
+          a: ["aij", "det", "rank", "trace"],
+          c: 0,
+          t: "easy",
+        }, //49
+        {
+          q: "Iz (trace)?",
+          a: ["Diagonal yig‘indisi", "det", "rang", "minor"],
+          c: 0,
+          t: "easy",
+        }, //50
+
+        /* ================= HARD (100–200) ================= */
+
+        {
+          q: "A=[2 4;3 9], det(A)?",
+          a: ["6", "-6", "18", "0"],
+          c: 0,
+          t: "hard",
+        }, //51
+        {
+          q: "A=[1 1;1 9], 2det(A)?",
+          a: ["16", "8", "0", "18"],
+          c: 0,
+          t: "hard",
+        }, //52
+        {
+          q: "|1 1 1;1 2 4;1 3 9|?",
+          a: ["2", "-2", "3", "13"],
+          c: 0,
+          t: "hard",
+        }, //53
+        {
+          q: "|1 1 1;1 1 1;1 1 1|?",
+          a: ["0", "1", "-1", "3"],
+          c: 0,
+          t: "hard",
+        }, //54
+        {
+          q: "A=[1 2;3 4], B=[5 6;7 8], A×B?",
+          a: ["19 22;43 50", "18 22;43 50", "20 22;43 50", "19 22;43 -50"],
+          c: 0,
+          t: "hard",
+        }, //55
+
+        {
+          q: "A=[3 1;1 4], B=[4 -1;-3 0], A+B?",
+          a: ["7 0;-2 4", "9 3;8 4", "-1 0;2 4", "3 1;1 4"],
+          c: 0,
+          t: "hard",
+        }, //56
+        {
+          q: "A=[0 2;3 1], B=[2 -2;4 0], A-B?",
+          a: ["-2 4;-1 1", "2 -4;1 -1", "0 0;0 0", "1 2;3 4"],
+          c: 0,
+          t: "hard",
+        }, //57
+        {
+          q: "A=[1 2;2 4] teskari?",
+          a: ["Mavjud emas", "Mavjud", "Qisman", "Aniq"],
+          c: 0,
+          t: "hard",
+        }, //58
+        {
+          q: "Q(x,y)=2x²+4xy+3y² matritsa?",
+          a: ["2 2;2 3", "4 2;2 3", "2 0;0 3", "1 4;4 3"],
+          c: 0,
+          t: "hard",
+        }, //59
+        {
+          q: "Bichiziqli funksiya?",
+          a: ["xᵀAy", "Ax", "Ay", "det"],
+          c: 0,
+          t: "hard",
+        }, //60
+
+        {
+          q: "A(2,3) B(4,7) chiziq?",
+          a: ["y=2x−1", "y=x+1", "y=3x", "y=-x"],
+          c: 0,
+          t: "hard",
+        }, //61
+        {
+          q: "A(1,2) dan y=3x−5 masofa?",
+          a: ["4/√10", "4", "√10", "10"],
+          c: 0,
+          t: "hard",
+        }, //62
+        {
+          q: "A(1,2,3) B(4,6,8) masofa?",
+          a: ["5√2", "5", "50", "35"],
+          c: 0,
+          t: "hard",
+        }, //63
+        {
+          q: "y=1/3x+2 ⟂ y=-bx+4, b?",
+          a: ["3", "-3", "1", "-2"],
+          c: 0,
+          t: "hard",
+        }, //64
+        {
+          q: "ax+4y−5=0 ⟂ 4x−3y+7=0, a?",
+          a: ["3", "-3", "1", "2"],
+          c: 0,
+          t: "hard",
+        }, //65
+
+        {
+          q: "3x−y+2z=5 va 6x−2y+4z=10?",
+          a: ["Parallel", "Kesishuvchi", "Perpendikulyar", "Mos"],
+          c: 0,
+          t: "hard",
+        }, //66
+        {
+          q: "ChPM optimal yechim?",
+          a: ["Burchakda", "Ichkarida", "Tasodifiy", "Har joyda"],
+          c: 0,
+          t: "hard",
+        }, //67
+        {
+          q: "Grafik usul qachon ishlamaydi?",
+          a: ["3+ o‘zgaruvchi", "2 o‘zgaruvchi", "1", "Hech qachon"],
+          c: 0,
+          t: "hard",
+        }, //68
+        {
+          q: "A⁻¹ qachon mavjud?",
+          a: ["det≠0", "det=0", "Har doim", "Hech qachon"],
+          c: 0,
+          t: "hard",
+        }, //69
+        {
+          q: "Tekislik A(1,0,0),B(0,1,0),C(0,0,1)?",
+          a: ["x+y+z=1", "x+y+z=0", "x−y+z=1", "x−y−z=0"],
+          c: 0,
+          t: "hard",
+        }, //70
+
+        {
+          q: "Parallel tekisliklar?",
+          a: [
+            "Normal vektorlar parallel",
+            "Kesishadi",
+            "Perpendikulyar",
+            "Mos",
+          ],
+          c: 0,
+          t: "hard",
+        }, //71
+        {
+          q: "Perpendikulyar tekisliklar?",
+          a: ["Normal vektorlar ⟂", "Parallel", "Mos", "Kesishmaydi"],
+          c: 0,
+          t: "hard",
+        }, //72
+        {
+          q: "Satrlar bog‘liq bo‘lsa?",
+          a: ["det=0", "det≠0", "rang=max", "teskari bor"],
+          c: 0,
+          t: "hard",
+        }, //73
+        {
+          q: "Rang maksimal bo‘lsa?",
+          a: ["Satrlar mustaqil", "Bog‘liq", "det=0", "nol"],
+          c: 0,
+          t: "hard",
+        }, //74
+        {
+          q: "Kvadratik forma?",
+          a: ["xᵀAx", "Ax=b", "det", "rank"],
+          c: 0,
+          t: "hard",
+        }, //75
+
+        {
+          q: "Simmetrik matritsa sharti?",
+          a: ["Aᵀ=A", "A=-A", "det=0", "rang=1"],
+          c: 0,
+          t: "hard",
+        }, //76
+        {
+          q: "Antisimmetrik matritsa?",
+          a: ["Aᵀ=-A", "Aᵀ=A", "det=0", "rang=1"],
+          c: 0,
+          t: "hard",
+        }, //77
+        {
+          q: "Iz (trace) nima?",
+          a: ["Diagonal yig‘indisi", "det", "minor", "rang"],
+          c: 0,
+          t: "hard",
+        }, //78
+        {
+          q: "A+B=B+A xossa?",
+          a: ["Kommutativ", "Assotsiativ", "Distributiv", "Teskari"],
+          c: 0,
+          t: "hard",
+        }, //79
+        {
+          q: "A(BC)=(AB)C?",
+          a: ["Assotsiativ", "Kommutativ", "Distributiv", "Teskari"],
+          c: 0,
+          t: "hard",
+        }, //80
+
+        {
+          q: "k(A+B)=kA+kB?",
+          a: ["Distributiv", "Kommutativ", "Assotsiativ", "Teskari"],
+          c: 0,
+          t: "hard",
+        }, //81
+        {
+          q: "det(AB)?",
+          a: ["detA·detB", "detA+detB", "detA−detB", "0"],
+          c: 0,
+          t: "hard",
+        }, //82
+        { q: "det(Aᵀ)?", a: ["detA", "-detA", "0", "1"], c: 0, t: "hard" }, //83
+        { q: "det(kA)?", a: ["kⁿdetA", "kdetA", "detA", "0"], c: 0, t: "hard" }, //84
+        {
+          q: "n×n matritsa rang max?",
+          a: ["n", "n²", "1", "0"],
+          c: 0,
+          t: "hard",
+        }, //85
+
+        {
+          q: "Chiziqli bog‘liqlik?",
+          a: ["Bir satr boshqasidan", "det≠0", "rang=max", "teskari bor"],
+          c: 0,
+          t: "hard",
+        }, //86
+        {
+          q: "Teskari matritsa formulasi?",
+          a: ["(1/detA)·adjA", "Aᵀ", "A²", "detA"],
+          c: 0,
+          t: "hard",
+        }, //87
+        {
+          q: "adj(A) nima?",
+          a: ["Algebraik to‘ldiruvchilar", "Minorlar", "Determinant", "Rang"],
+          c: 0,
+          t: "hard",
+        }, //88
+        {
+          q: "Ortogonal vektorlar?",
+          a: ["Skalyar=0", "Parallel", "Mos", "Qarama-qarshi"],
+          c: 0,
+          t: "hard",
+        }, //89
+        {
+          q: "Vektorlar parallel?",
+          a: ["k·a=b", "a·b=0", "|a|=|b|", "a+b=0"],
+          c: 0,
+          t: "hard",
+        }, //90
+
+        {
+          q: "To‘g‘ri chiziq umumiy?",
+          a: ["Ax+By+C=0", "y=kx+b", "x²+y²", "xyz"],
+          c: 0,
+          t: "hard",
+        }, //91
+        {
+          q: "Masofa nuqta–chiziq?",
+          a: ["|Ax0+By0+C|/√(A²+B²)", "x+y", "|x|", "|y|"],
+          c: 0,
+          t: "hard",
+        }, //92
+        {
+          q: "Masofa nuqta–tekislik?",
+          a: ["|Ax0+By0+Cz0+D|/√(A²+B²+C²)", "x+y+z", "|x|", "|y|"],
+          c: 0,
+          t: "hard",
+        }, //93
+        {
+          q: "Normal vektor?",
+          a: ["(A,B,C)", "(x,y,z)", "(k,b)", "(1,1)"],
+          c: 0,
+          t: "hard",
+        }, //94
+        {
+          q: "Yo‘naltiruvchi vektor?",
+          a: ["Chiziq yo‘nalishi", "Normal", "Diagonal", "Tasodifiy"],
+          c: 0,
+          t: "hard",
+        }, //95
+
+        {
+          q: "Parametrik tenglama?",
+          a: ["x=x0+at", "y=kx+b", "Ax+By=0", "x²+y²"],
+          c: 0,
+          t: "hard",
+        }, //96
+        {
+          q: "Vektor proyeksiyasi?",
+          a: ["(a·b)/|b|", "|a|", "|b|", "det"],
+          c: 0,
+          t: "hard",
+        }, //97
+        {
+          q: "Aralash ko‘paytma?",
+          a: ["[a,b,c]", "a·b", "a×b", "|a|"],
+          c: 0,
+          t: "hard",
+        }, //98
+        {
+          q: "Aralash ko‘paytma = 0?",
+          a: ["Bir tekislikda", "Parallel", "Perpendikulyar", "Mos"],
+          c: 0,
+          t: "hard",
+        }, //99
+        {
+          q: "Fazoda tekislik o‘lchami?",
+          a: ["2", "1", "3", "0"],
+          c: 0,
+          t: "hard",
+        }, //100
+
+        {
+          q: "A=[2 4;3 9], det(A)?",
+          a: ["6", "-6", "18", "0"],
+          c: 0,
+          t: "hard",
+        }, //51
+        {
+          q: "A=[1 1;1 9], 2det(A)?",
+          a: ["16", "8", "0", "18"],
+          c: 0,
+          t: "hard",
+        }, //52
+        {
+          q: "|1 1 1;1 2 4;1 3 9|?",
+          a: ["2", "-2", "3", "13"],
+          c: 0,
+          t: "hard",
+        }, //53
+        {
+          q: "|1 1 1;1 1 1;1 1 1|?",
+          a: ["0", "1", "-1", "3"],
+          c: 0,
+          t: "hard",
+        }, //54
+        {
+          q: "A=[1 2;3 4], B=[5 6;7 8], A×B?",
+          a: ["19 22;43 50", "18 22;43 50", "20 22;43 50", "19 22;43 -50"],
+          c: 0,
+          t: "hard",
+        }, //55
+
+        {
+          q: "A=[3 1;1 4], B=[4 -1;-3 0], A+B?",
+          a: ["7 0;-2 4", "9 3;8 4", "-1 0;2 4", "3 1;1 4"],
+          c: 0,
+          t: "hard",
+        }, //56
+        {
+          q: "A=[0 2;3 1], B=[2 -2;4 0], A-B?",
+          a: ["-2 4;-1 1", "2 -4;1 -1", "0 0;0 0", "1 2;3 4"],
+          c: 0,
+          t: "hard",
+        }, //57
+        {
+          q: "A=[1 2;2 4] teskari?",
+          a: ["Mavjud emas", "Mavjud", "Qisman", "Aniq"],
+          c: 0,
+          t: "hard",
+        }, //58
+        {
+          q: "Q(x,y)=2x²+4xy+3y² matritsa?",
+          a: ["2 2;2 3", "4 2;2 3", "2 0;0 3", "1 4;4 3"],
+          c: 0,
+          t: "hard",
+        }, //59
+        {
+          q: "Bichiziqli funksiya?",
+          a: ["xᵀAy", "Ax", "Ay", "det"],
+          c: 0,
+          t: "hard",
+        }, //60
+
+        {
+          q: "A(2,3) B(4,7) chiziq?",
+          a: ["y=2x−1", "y=x+1", "y=3x", "y=-x"],
+          c: 0,
+          t: "hard",
+        }, //61
+        {
+          q: "A(1,2) dan y=3x−5 masofa?",
+          a: ["4/√10", "4", "√10", "10"],
+          c: 0,
+          t: "hard",
+        }, //62
+        {
+          q: "A(1,2,3) B(4,6,8) masofa?",
+          a: ["5√2", "5", "50", "35"],
+          c: 0,
+          t: "hard",
+        }, //63
+        {
+          q: "y=1/3x+2 ⟂ y=-bx+4, b?",
+          a: ["3", "-3", "1", "-2"],
+          c: 0,
+          t: "hard",
+        }, //64
+        {
+          q: "ax+4y−5=0 ⟂ 4x−3y+7=0, a?",
+          a: ["3", "-3", "1", "2"],
+          c: 0,
+          t: "hard",
+        }, //65
+
+        {
+          q: "3x−y+2z=5 va 6x−2y+4z=10?",
+          a: ["Parallel", "Kesishuvchi", "Perpendikulyar", "Mos"],
+          c: 0,
+          t: "hard",
+        }, //66
+        {
+          q: "ChPM optimal yechim?",
+          a: ["Burchakda", "Ichkarida", "Tasodifiy", "Har joyda"],
+          c: 0,
+          t: "hard",
+        }, //67
+        {
+          q: "Grafik usul qachon ishlamaydi?",
+          a: ["3+ o‘zgaruvchi", "2 o‘zgaruvchi", "1", "Hech qachon"],
+          c: 0,
+          t: "hard",
+        }, //68
+        {
+          q: "A⁻¹ qachon mavjud?",
+          a: ["det≠0", "det=0", "Har doim", "Hech qachon"],
+          c: 0,
+          t: "hard",
+        }, //69
+        {
+          q: "Tekislik A(1,0,0),B(0,1,0),C(0,0,1)?",
+          a: ["x+y+z=1", "x+y+z=0", "x−y+z=1", "x−y−z=0"],
+          c: 0,
+          t: "hard",
+        }, //70
+
+        {
+          q: "Parallel tekisliklar?",
+          a: [
+            "Normal vektorlar parallel",
+            "Kesishadi",
+            "Perpendikulyar",
+            "Mos",
+          ],
+          c: 0,
+          t: "hard",
+        }, //71
+        {
+          q: "Perpendikulyar tekisliklar?",
+          a: ["Normal vektorlar ⟂", "Parallel", "Mos", "Kesishmaydi"],
+          c: 0,
+          t: "hard",
+        }, //72
+        {
+          q: "Satrlar bog‘liq bo‘lsa?",
+          a: ["det=0", "det≠0", "rang=max", "teskari bor"],
+          c: 0,
+          t: "hard",
+        }, //73
+        {
+          q: "Rang maksimal bo‘lsa?",
+          a: ["Satrlar mustaqil", "Bog‘liq", "det=0", "nol"],
+          c: 0,
+          t: "hard",
+        }, //74
+        {
+          q: "Kvadratik forma?",
+          a: ["xᵀAx", "Ax=b", "det", "rank"],
+          c: 0,
+          t: "hard",
+        }, //75
+
+        {
+          q: "Simmetrik matritsa sharti?",
+          a: ["Aᵀ=A", "A=-A", "det=0", "rang=1"],
+          c: 0,
+          t: "hard",
+        }, //76
+        {
+          q: "Antisimmetrik matritsa?",
+          a: ["Aᵀ=-A", "Aᵀ=A", "det=0", "rang=1"],
+          c: 0,
+          t: "hard",
+        }, //77
+        {
+          q: "Iz (trace) nima?",
+          a: ["Diagonal yig‘indisi", "det", "minor", "rang"],
+          c: 0,
+          t: "hard",
+        }, //78
+        {
+          q: "A+B=B+A xossa?",
+          a: ["Kommutativ", "Assotsiativ", "Distributiv", "Teskari"],
+          c: 0,
+          t: "hard",
+        }, //79
+        {
+          q: "A(BC)=(AB)C?",
+          a: ["Assotsiativ", "Kommutativ", "Distributiv", "Teskari"],
+          c: 0,
+          t: "hard",
+        }, //80
+
+        {
+          q: "k(A+B)=kA+kB?",
+          a: ["Distributiv", "Kommutativ", "Assotsiativ", "Teskari"],
+          c: 0,
+          t: "hard",
+        }, //81
+        {
+          q: "det(AB)?",
+          a: ["detA·detB", "detA+detB", "detA−detB", "0"],
+          c: 0,
+          t: "hard",
+        }, //82
+        { q: "det(Aᵀ)?", a: ["detA", "-detA", "0", "1"], c: 0, t: "hard" }, //83
+        { q: "det(kA)?", a: ["kⁿdetA", "kdetA", "detA", "0"], c: 0, t: "hard" }, //84
+        {
+          q: "n×n matritsa rang max?",
+          a: ["n", "n²", "1", "0"],
+          c: 0,
+          t: "hard",
+        }, //85
+
+        {
+          q: "Chiziqli bog‘liqlik?",
+          a: ["Bir satr boshqasidan", "det≠0", "rang=max", "teskari bor"],
+          c: 0,
+          t: "hard",
+        }, //86
+        {
+          q: "Teskari matritsa formulasi?",
+          a: ["(1/detA)·adjA", "Aᵀ", "A²", "detA"],
+          c: 0,
+          t: "hard",
+        }, //87
+        {
+          q: "adj(A) nima?",
+          a: ["Algebraik to‘ldiruvchilar", "Minorlar", "Determinant", "Rang"],
+          c: 0,
+          t: "hard",
+        }, //88
+        {
+          q: "Ortogonal vektorlar?",
+          a: ["Skalyar=0", "Parallel", "Mos", "Qarama-qarshi"],
+          c: 0,
+          t: "hard",
+        }, //89
+        {
+          q: "Vektorlar parallel?",
+          a: ["k·a=b", "a·b=0", "|a|=|b|", "a+b=0"],
+          c: 0,
+          t: "hard",
+        }, //90
+
+        {
+          q: "To‘g‘ri chiziq umumiy?",
+          a: ["Ax+By+C=0", "y=kx+b", "x²+y²", "xyz"],
+          c: 0,
+          t: "hard",
+        }, //91
+        {
+          q: "Masofa nuqta–chiziq?",
+          a: ["|Ax0+By0+C|/√(A²+B²)", "x+y", "|x|", "|y|"],
+          c: 0,
+          t: "hard",
+        }, //92
+        {
+          q: "Masofa nuqta–tekislik?",
+          a: ["|Ax0+By0+Cz0+D|/√(A²+B²+C²)", "x+y+z", "|x|", "|y|"],
+          c: 0,
+          t: "hard",
+        }, //93
+        {
+          q: "Normal vektor?",
+          a: ["(A,B,C)", "(x,y,z)", "(k,b)", "(1,1)"],
+          c: 0,
+          t: "hard",
+        }, //94
+        {
+          q: "Yo‘naltiruvchi vektor?",
+          a: ["Chiziq yo‘nalishi", "Normal", "Diagonal", "Tasodifiy"],
+          c: 0,
+          t: "hard",
+        }, //95
+
+        {
+          q: "Parametrik tenglama?",
+          a: ["x=x0+at", "y=kx+b", "Ax+By=0", "x²+y²"],
+          c: 0,
+          t: "hard",
+        }, //96
+        {
+          q: "Vektor proyeksiyasi?",
+          a: ["(a·b)/|b|", "|a|", "|b|", "det"],
+          c: 0,
+          t: "hard",
+        }, //97
+        {
+          q: "Aralash ko‘paytma?",
+          a: ["[a,b,c]", "a·b", "a×b", "|a|"],
+          c: 0,
+          t: "hard",
+        }, //98
+        {
+          q: "Aralash ko‘paytma = 0?",
+          a: ["Bir tekislikda", "Parallel", "Perpendikulyar", "Mos"],
+          c: 0,
+          t: "hard",
+        }, //99
+        {
+          q: "Fazoda tekislik o‘lchami?",
+          a: ["2", "1", "3", "0"],
+          c: 0,
+          t: "hard",
+        }, //100
+      ];
+      function shuffle(arr) {
+        return arr.sort(() => Math.random() - 0.5);
+      }
+
+      let solved = 0,
+        correct = 0,
+        wrong = 0;
+
+      function startQuiz() {
+        const container = document.getElementById("quiz-container");
+
+        // Oson va Qiyinlarni ajratib olamiz
+        const easies = shuffle(
+          allQuestions.filter((x) => x.t === "easy"),
+        ).slice(0, 10);
+        const hards = shuffle(allQuestions.filter((x) => x.t === "hard")).slice(
+          0,
+          10,
+        );
+
+        // 20 tasini birlashtirib yana aralashtiramiz
+        const finalSelection = shuffle([...easies, ...hards]);
+
+        finalSelection.forEach((item, index) => {
+          const div = document.createElement("div");
+          div.className = "question-card";
+
+          const badgeClass = item.t === "easy" ? "easy" : "hard";
+          const badgeText = item.t === "easy" ? "Oson" : "Qiyin";
+
+          let buttonsHTML = "";
+          item.a.forEach((opt, idx) => {
+            buttonsHTML += `<button onclick="check(this, ${idx}, ${item.c})">${opt}</button>`;
+          });
+
+          div.innerHTML = `
+            <span class="badge ${badgeClass}">${badgeText}</span>
+            <div style="font-weight: 600; font-size: 17px;">${index + 1}. ${item.q}</div>
+            <div class="options">${buttonsHTML}</div>
+        `;
+          container.appendChild(div);
+        });
+      }
+
+      function check(btn, selected, correctIdx) {
+        const parent = btn.parentElement;
+        const allBtns = parent.getElementsByTagName("button");
+
+        solved++;
+        document.getElementById("current-q").innerText = solved;
+
+        if (selected === correctIdx) {
+          btn.classList.add("correct");
+          correct++;
+          document.getElementById("correct-ans").innerText = correct;
+        } else {
+          btn.classList.add("wrong");
+          allBtns[correctIdx].classList.add("correct");
+          wrong++;
+          document.getElementById("wrong-ans").innerText = wrong;
+        }
+
+        for (let b of allBtns) b.classList.add("disabled");
+      }
+
+      window.onload = startQuiz;
+    </script>
+  </body>
+</html>
